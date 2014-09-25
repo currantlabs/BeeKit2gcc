@@ -1,7 +1,6 @@
 CPU:=-mcpu=cortex-m4 -mthumb -Wa,-mthumb
 
 CC:=arm-none-eabi-gcc $(CPU)
-LD:=arm-none-eabi-ld
 CPP := arm-none-eabi-cpp
 OBJCOPY := arm-none-eabi-objcopy
 
