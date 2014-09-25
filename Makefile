@@ -10,9 +10,7 @@ LINKER_SCRIPT=$(ProjDirPath)/PLM/Linker_Config/MKW24D512V.ld
 MODULES = PLM SSM MacPhy BeeApps
 MAKEFILE_DIR := $(dir $(firstword $(MAKEFILE_LIST)))
 
-MOD_CONFIG = $(foreach mod,$(MODULES),$(mod).mk)
-
-include $(MOD_CONFIG)
+include $(foreach mod,$(MODULES),$(mod).mk)
 
 OBJ = $(foreach mod,$(MODULES),$(OBJ_$(mod)))
 
