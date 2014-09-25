@@ -8,6 +8,7 @@ ProjDirPath:=.
 LINKER_SCRIPT=$(ProjDirPath)/PLM/Linker_Config/MKW24D512V.ld
 
 MODULES = PLM SSM MacPhy BeeApps
+MAKEFILE_DIR := $(dir $(firstword $(MAKEFILE_LIST)))
 
 MOD_CONFIG = $(foreach mod,$(MODULES),$(mod).mk)
 
@@ -45,7 +46,7 @@ $(LINKER_SCRIPT): $(patsubst %.ld,%.bld,$(LINKER_SCRIPT))
 
 # Extract arguments, defines, libraries from the CodeWarrior project file
 config.mk: .cproject
-	scripts/generate.py $^ $@
+	$(MAKEFILE_DIR)generate.py $^ $@
 
 cscope.out:
 	cscope -b -R -I /usr/arm-none-eabi/include -s $(ProjDirPath)
