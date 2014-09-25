@@ -29,8 +29,8 @@ main.srec: main.elf
 	$(OBJCOPY) -O srec $< $@
 
 # Run preprocessor on the linker script
+# The parameters here are extracted from the CodeWarrior project file
 $(LINKER_SCRIPT): $(patsubst %.ld,%.bld,$(LINKER_SCRIPT))
-	# The parameters here are extracted from the CodeWarrior project file
 	$(CPP) -P  -DgUseNVMLink_d=1  $< -o $@
 
 # Generate per-directory list of sources
