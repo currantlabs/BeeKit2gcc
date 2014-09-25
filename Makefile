@@ -34,8 +34,15 @@ $(LINKER_SCRIPT): $(patsubst %.ld,%.bld,$(LINKER_SCRIPT))
 	$(CPP) -P  -DgUseNVMLink_d=1  $< -o $@
 
 # Generate per-directory list of sources
-$(MOD_CONFIG):
-	scripts/gen_mk.sh $(patsubst %.mk,%,$@) $@
+%.mk: %
+	@echo -n 'Generating make instructions for $^...'
+	@echo -e 'SRCDIR_$< := \\' > $@
+	@find $^ -name *.c | sed 's|^\(.*\)/[^/]*|\t\1 \\|' | sort -u >> $@
+	@echo >> $@
+	@echo -e 'OBJ_$< := $$(foreach dir,$$(SRCDIR_$<), \\' >> $@
+	@echo -e '\t\t$$(patsubst %.c,%.o, \\' >> $@
+	@echo -e '\t\t$$(wildcard $$(dir)/*.c)))' >> $@
+	@echo ' Done.'
 
 # Extract arguments, defines, libraries from the CodeWarrior project file
 config.mk: .cproject
