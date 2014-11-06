@@ -21,15 +21,18 @@ LDFLAGS+=-L$(ProjDirPath)
 all: main.srec
 
 main.elf: $(LINKER_SCRIPT) $(OBJ)
-	$(CC) $(LDFLAGS) -o $@ -T $^ -Wl,--start-group $(LDLIBS) -Wl,--end-group
+	@echo "Linking final binary..."
+	@$(CC) $(LDFLAGS) -o $@ -T $^ -Wl,--start-group $(LDLIBS) -Wl,--end-group
 
 main.srec: main.elf
-	$(OBJCOPY) -O srec $< $@
+	@echo "Generating SREC file..."
+	@$(OBJCOPY) -O srec $< $@
 
 # Run preprocessor on the linker script
 # The parameters here are extracted from the CodeWarrior project file
 $(LINKER_SCRIPT): $(patsubst %.ld,%.bld,$(LINKER_SCRIPT))
-	$(CPP) -P  -DgUseNVMLink_d=1  $< -o $@
+	@echo "Preprocessing linker..."
+	@$(CPP) -P  -DgUseNVMLink_d=1  $< -o $@
 
 # Generate per-directory list of sources
 %.mk: %
@@ -44,7 +47,8 @@ $(LINKER_SCRIPT): $(patsubst %.ld,%.bld,$(LINKER_SCRIPT))
 
 # Extract arguments, defines, libraries from the CodeWarrior project file
 config.mk: .cproject
-	$(MAKEFILE_DIR)generate.py $^ $@
+	@echo "Generating $@..."
+	@BeeKit2gcc/generate.py $^ $@
 
 cscope.out:
 	cscope -b -R -I /usr/arm-none-eabi/include -s $(ProjDirPath)
