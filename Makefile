@@ -50,9 +50,6 @@ config.mk: .cproject
 	@echo "Generating $@..."
 	@BeeKit2gcc/generate.py $^ $@
 
-cscope.out:
-	cscope -b -R -I /usr/arm-none-eabi/include -s $(ProjDirPath)
-
 clean:
 	rm -f $(OBJ)
 
