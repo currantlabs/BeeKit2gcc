@@ -7,7 +7,7 @@ OBJCOPY := arm-none-eabi-objcopy
 ProjDirPath:=.
 LINKER_SCRIPT=$(ProjDirPath)/PLM/Linker_Config/MKW24D512V.ld
 
-MODULES = PLM SSM MacPhy BeeApps
+MODULES = PLM SSM MacPhy BeeApps Application
 MAKEFILE_DIR := $(dir $(firstword $(MAKEFILE_LIST)))
 
 -include $(foreach mod,$(MODULES),$(mod).mk)
