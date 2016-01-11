@@ -22,7 +22,7 @@ all: main.srec
 
 main.elf: $(LINKER_SCRIPT) $(OBJ)
 	@echo "Linking final binary..."
-	@$(CC) $(LDFLAGS) -o $@ -T $^ -Wl,--start-group $(LDLIBS) -Wl,--end-group
+	$(CC) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@ -T $^ -Wl,--start-group $(LDLIBS) -Wl,--end-group
 
 main.srec: main.elf
 	@echo "Generating SREC file..."
@@ -45,7 +45,7 @@ $(LINKER_SCRIPT): $(patsubst %.ld,%.bld,$(LINKER_SCRIPT))
 # Extract arguments, defines, libraries from the CodeWarrior project file
 config.mk: .cproject
 	@echo "Generating $@..."
-	@BeeKit2gcc/generate.py $^ $@
+	@beekit2gcc.py $^ $@
 
 clean:
 	rm -f $(OBJ)
