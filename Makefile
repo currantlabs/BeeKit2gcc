@@ -37,12 +37,9 @@ $(LINKER_SCRIPT): $(patsubst %.ld,%.bld,$(LINKER_SCRIPT))
 # Generate per-directory list of sources
 %.mk: %
 	@echo -n 'Generating make instructions for $^...'
-	@echo -e 'SRCDIR_$< := \\' > $@
-	@find $^ -name *.c | sed 's|^\(.*\)/[^/]*|\t\1 \\|' | sort -u >> $@
+	@echo 'OBJ_$< := \\' >> $@
+	@find $^ -name *.c | sed 's/\(.*\)\.c/	\1\.o\\/' >> $@
 	@echo >> $@
-	@echo -e 'OBJ_$< := $$(foreach dir,$$(SRCDIR_$<), \\' >> $@
-	@echo -e '\t\t$$(patsubst %.c,%.o, \\' >> $@
-	@echo -e '\t\t$$(wildcard $$(dir)/*.c)))' >> $@
 	@echo ' Done.'
 
 # Extract arguments, defines, libraries from the CodeWarrior project file
