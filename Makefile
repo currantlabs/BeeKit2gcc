@@ -5,56 +5,58 @@ CPP := arm-none-eabi-cpp
 OBJCOPY := arm-none-eabi-objcopy
 
 ProjDirPath:=.
-LINKER_SCRIPT=$(ProjDirPath)/PLM/Linker_Config/MKW24D512V.ld
+LINKER_SCRIPT=PLM/Linker_Config/MKW24D512V.ld
 
 MODULES = PLM SSM MacPhy BeeApps Application
 MAKEFILE_DIR := $(dir $(firstword $(MAKEFILE_LIST)))
+BUILD_DIR ?= build
 
--include $(foreach mod,$(MODULES),$(mod).mk)
+-include $(foreach mod,$(MODULES),$(BUILD_DIR)/$(mod).mk)
 
 OBJ = $(foreach mod,$(MODULES),$(OBJ_$(mod)))
 
--include config.mk
+-include $(BUILD_DIR)/config.mk
 
-LDFLAGS+=-L$(ProjDirPath)
+all: $(BUILD_DIR)/main.srec
 
-all: main.srec
+$(BUILD_DIR)/main.elf: $(BUILD_DIR)/$(LINKER_SCRIPT) $(OBJ)
+	@echo "LD	$@ ..."
+	@$(CC) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@ -T $^ -Wl,--start-group $(LDLIBS) -Wl,--end-group
 
-main.elf: $(LINKER_SCRIPT) $(OBJ)
-	@echo "Linking final binary..."
-	$(CC) $(LDFLAGS) $(EXTRA_LDFLAGS) -o $@ -T $^ -Wl,--start-group $(LDLIBS) -Wl,--end-group
-
-main.srec: main.elf
-	@echo "Generating SREC file..."
+$(BUILD_DIR)/main.srec: $(BUILD_DIR)/main.elf
+	@echo "OBJCOPY	$@ ..."
 	@$(OBJCOPY) -O srec $< $@
 
 # Run preprocessor on the linker script
 # The parameters here are extracted from the CodeWarrior project file
-$(LINKER_SCRIPT): $(patsubst %.ld,%.bld,$(LINKER_SCRIPT))
-	@echo "Preprocessing linker..."
-	@$(CPP) -P  -DgUseNVMLink_d=1  $< -o $@
+$(BUILD_DIR)/$(LINKER_SCRIPT): $(patsubst %.ld,%.bld,$(LINKER_SCRIPT))
+	@echo "CPP	$@ ..."
+	@mkdir -p $(dir $@)
+	@$(CPP) -P  -DgUseNVMLink_d=1 $< -o $@
 
 # Generate per-directory list of sources
-%.mk: %
-	@echo -n 'Generating make instructions for $^...'
+$(BUILD_DIR)/%.mk: %
+	@echo "GEN	$@ ..."
 	@echo 'OBJ_$< := \\' >> $@
-	@find $^ -name *.c | sed 's/\(.*\)\.c/	\1\.o\\/' >> $@
+	@find $^ -name *.c | sed 's/\(.*\)\.c/	${BUILD_DIR}\/\1\.o\\/' >> $@
 	@echo >> $@
-	@echo ' Done.'
+
+$(BUILD_DIR)/%.o: %.c
+	@echo "CC	$@ ..."
+	@mkdir -p $(dir $@)
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
 # Extract arguments, defines, libraries from the CodeWarrior project file
-config.mk: .cproject
-	@echo "Generating $@..."
+$(BUILD_DIR)/config.mk: .cproject
+	@echo "GEN	$@ ..."
+	@mkdir -p $(BUILD_DIR)
 	@beekit2gcc.py $^ $@
 
 clean:
-	rm -f $(OBJ)
+	@rm -f $(OBJ)
+	@rm -f $(BUILD_DIR)/$(LINKER_SCRIPT)
+	@rm -f $(BUILD_DIR)/*.mk
+	@rm -f $(BUILD_DIR)/main.elf $(BUILD_DIR)/main.srec
+	@rm -r $(BUILD_DIR)
 
-dist-clean: clean
-	rm -f $(LINKER_SCRIPT)
-	rm -f *.mk
-
-clean-all: dist-clean clean
-	rm -f main.elf main.srec
-
-.PHONY = clean dist-clean clean-all
+.PHONY = clean
